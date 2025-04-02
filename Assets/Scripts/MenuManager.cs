@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 // Si BikeData est dans un namespace différent, ajoutez la référence ici
 // using VotreNamespace;
@@ -20,8 +21,20 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private Button quitButton;
 
+    [Header("Player Info")]
+    [SerializeField] private TMP_InputField playerNameInput;
+    [SerializeField] private string defaultPlayerName = "Joueur Inconnu";
+
     private int currentBikeIndex = 0;
     private GameObject currentBikeModel;
+
+    // Tableau des couleurs pour le texte
+    private readonly Color[] bikeColors = new Color[]
+    {
+        Color.red,
+        Color.blue,
+        Color.green
+    };
 
     private void Awake()
     {
@@ -31,7 +44,15 @@ public class MenuManager : MonoBehaviour
 
     private void Start()
     {
-        // Vérification des références
+        ValidateReferences();
+        SetupButtonListeners();
+        CreateTemporaryBikes();
+        DisplayCurrentBike();
+        SetupPlayerNameInput();
+    }
+
+    private void ValidateReferences()
+    {
         if (bikeDisplayPosition == null)
         {
             Debug.LogError("BikeDisplayPosition n'est pas assigné!");
@@ -62,18 +83,39 @@ public class MenuManager : MonoBehaviour
             Debug.LogError("QuitButton n'est pas assigné!");
             return;
         }
+        if (playerNameInput == null)
+        {
+            Debug.LogError("PlayerNameInput n'est pas assigné!");
+            return;
+        }
+    }
 
-        // Ajouter les listeners aux boutons
+    private void SetupButtonListeners()
+    {
         playButton.onClick.AddListener(StartGame);
         quitButton.onClick.AddListener(QuitGame);
         previousBikeButton.onClick.AddListener(ShowPreviousBike);
         nextBikeButton.onClick.AddListener(ShowNextBike);
+    }
 
-        // Créer des motos temporaires si nécessaire
-        CreateTemporaryBikes();
+    private void SetupPlayerNameInput()
+    {
+        string savedName = PlayerPrefs.GetString("PlayerName", defaultPlayerName);
+        playerNameInput.text = savedName;
 
-        // Afficher la première moto
-        DisplayCurrentBike();
+        playerNameInput.onEndEdit.AddListener(OnPlayerNameChanged);
+    }
+
+    private void OnPlayerNameChanged(string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName))
+        {
+            playerNameInput.text = defaultPlayerName;
+            newName = defaultPlayerName;
+        }
+
+        PlayerPrefs.SetString("PlayerName", newName);
+        PlayerPrefs.Save();
     }
 
     private void DisplayCurrentBike()
@@ -92,8 +134,12 @@ public class MenuManager : MonoBehaviour
         // S'assurer que le modèle est actif
         currentBikeModel.SetActive(true);
         
-        // Mettre à jour le nom de la moto
-        bikeNameText.text = bikes[currentBikeIndex].bikeName;
+        // Mise à jour du texte et de sa couleur
+        if (bikeNameText != null)
+        {
+            bikeNameText.text = bikes[currentBikeIndex].bikeName;
+            bikeNameText.color = bikeColors[currentBikeIndex];
+        }
     }
 
     private void ShowNextBike()
@@ -110,11 +156,17 @@ public class MenuManager : MonoBehaviour
 
     private void StartGame()
     {
-        // Sauvegarder l'index de la moto sélectionnée
+        string playerName = playerNameInput.text;
+        if (string.IsNullOrWhiteSpace(playerName))
+        {
+            playerName = defaultPlayerName;
+            playerNameInput.text = playerName;
+        }
+
+        PlayerPrefs.SetString("PlayerName", playerName);
         PlayerPrefs.SetInt("SelectedBikeIndex", currentBikeIndex);
         PlayerPrefs.Save();
         
-        // Charger la scène de jeu
         SceneManager.LoadScene(gameSceneName);
     }
 
@@ -142,23 +194,24 @@ public class MenuManager : MonoBehaviour
             return;
 
         bikes = new BikeData[3];
+        string[] names = new string[] { "Moto Rouge", "Moto Bleue", "Moto Verte" };
+
         for (int i = 0; i < 3; i++)
         {
             bikes[i] = new BikeData();
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             
-            // Définir la taille du cube
-            cube.transform.localScale = new Vector3(2f, 1f, 4f); // Forme plus proche d'une moto
+            cube.transform.localScale = new Vector3(2f, 1f, 4f);
             
-            // Définir la couleur
             Material material = new Material(Shader.Find("Standard"));
-            material.color = i == 0 ? Color.red : i == 1 ? Color.blue : Color.green;
+            material.color = bikeColors[i];
+            material.EnableKeyword("_EMISSION");
+            material.SetColor("_EmissionColor", bikeColors[i] * 0.5f);
             cube.GetComponent<Renderer>().material = material;
             
             bikes[i].bikeModel = cube;
-            bikes[i].bikeName = i == 0 ? "Moto Rouge" : i == 1 ? "Moto Bleue" : "Moto Verte";
+            bikes[i].bikeName = names[i];
             
-            // Cacher le cube initialement
             cube.SetActive(false);
         }
     }
