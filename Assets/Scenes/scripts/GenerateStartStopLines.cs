@@ -10,6 +10,8 @@ public class GenerateStartStopLines : MonoBehaviour
         new Vector3(66.226f, 1.934f, -6.571f),
         new Vector3(65.114f, 0.998f, -9.678f),
         new Vector3(70.667f, 0.998f, -4.743f),
+        new Vector3(70.667f, 2.108f, -9.446f),
+        new Vector3(77.759f, 1.943f, -3.624f),
     };
 
     private Vector3 startPoint;
