@@ -39,5 +39,8 @@ public class GenerateStartStopLines : MonoBehaviour
 
         Debug.Log($"[START] Coordonnées choisies : {startPoint}");
         Debug.Log($"[END] Coordonnées choisies : {endPoint}");
+
+        Camera.main.transform.position = startPoint;
+        Camera.main.transform.LookAt(startPoint);
     }
 }
