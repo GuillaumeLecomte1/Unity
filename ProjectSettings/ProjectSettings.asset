@@ -776,14 +776,14 @@ PlayerSettings:
   editorAssembliesCompatibilityLevel: 1
   m_RenderingPath: 2
   m_MobileRenderingPath: 1
-  metroPackageName: MDS_Game2
+  metroPackageName: Unity
   metroPackageVersion: 
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: MDS_Game2
+  metroApplicationDescription: Unity
   wsaImages: {}
   metroTileShortName: 
   metroTileShowName: 0
