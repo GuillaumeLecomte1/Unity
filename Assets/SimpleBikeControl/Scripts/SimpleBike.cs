@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 namespace KikiNgao.SimpleBikeControl
 {
     public class SimpleBike : MonoBehaviour
@@ -23,7 +22,7 @@ namespace KikiNgao.SimpleBikeControl
         [Tooltip("speed multiply max")]
         [SerializeField] private float powerUpMax = 2;
         [Tooltip("define how fast to reach power up max")]
-        [SerializeField] private float powerUpSpeed = .5f;
+        [SerializeField] public float powerUpSpeed = .5f;
         [SerializeField] private float airResistance = 6;
         [SerializeField] private float turningSmooth = .8f;
         [Tooltip("Rigidbody Drag while standing")]
@@ -45,7 +44,6 @@ namespace KikiNgao.SimpleBikeControl
         private Rigidbody m_Rigidbody;
         public Rigidbody GetRigidbody() => m_Rigidbody;
 
-
         [HideInInspector]
         public bool falling;
         private float fallingDrag = 1;
@@ -57,6 +55,15 @@ namespace KikiNgao.SimpleBikeControl
         private float currentLegPower;
         private float reversePower;
         private EventManager eventManager;
+
+        // Nouvelle variable pour l'accélération personnalisable dans l'Editor
+        [Header("Paramètres d'accélération personnalisée")]
+        [Tooltip("Définissez ici la valeur d'accélération désirée pour la moto")]
+        [SerializeField] private float customAcceleration = 10f;
+
+        // Permet d'activer l'accélération personnalisée via l'Editor ou un autre script
+        [Tooltip("Active l'accélération personnalisée si vrai")]
+        [SerializeField] public bool useCustomAcceleration = false;
 
         public bool IsReverse() => inputManager.vertical < 0;
         public bool IsMovingToward => inputManager.vertical > 0;
@@ -93,7 +100,6 @@ namespace KikiNgao.SimpleBikeControl
             reversePower = legPower * 3;
 
             Freeze = true;
-
         }
 
         //creat cemter of mass and add to the bike
@@ -133,6 +139,12 @@ namespace KikiNgao.SimpleBikeControl
             UpdateLegPower(IsSpeedUp());
             if (!FreezeCrankset) UpdateCranksetRotation();
             UpdateWheelDisplay();
+
+            // Si l'accélération personnalisée est activée, applique-la ici
+            if (useCustomAcceleration)
+            {
+                AccelerateWithCustomValue();
+            }
         }
 
         private void UpdateLegPower(bool speedUp)
@@ -152,6 +164,26 @@ namespace KikiNgao.SimpleBikeControl
             powerUp = 1f;
             currentLegPower = legPower * 10 * powerUp;
         }
+
+        /// <summary>
+        /// Méthode publique pour appliquer une accélération personnalisée à la moto.
+        /// Appelez cette méthode pour accélérer la moto selon la valeur définie dans l'Editor.
+        /// </summary>
+        public void AccelerateWithCustomValue()
+        {
+            // Utilise la valeur customAcceleration définie dans l'Editor
+            // Applique la force d'accélération sur la roue arrière
+            if (m_Rigidbody != null && rearWheelCollider != null)
+            {
+                // On applique la valeur d'accélération dans la direction avant si vertical >= 0, sinon en arrière
+                float direction = inputManager != null ? Mathf.Sign(inputManager.vertical) : 1f;
+                // Si aucune entrée verticale, on considère direction = 1 (avant)
+                if (inputManager != null && Mathf.Abs(inputManager.vertical) < 0.01f)
+                    direction = 1f;
+                rearWheelCollider.motorTorque = customAcceleration * direction;
+            }
+        }
+
         private void MovingBike()
         {
             Freeze = false;
@@ -159,7 +191,12 @@ namespace KikiNgao.SimpleBikeControl
             m_Rigidbody.angularDamping = 5 + GetBikeSpeedMs() / (m_Rigidbody.mass / 10);
 
             frontWheelCollider.brakeTorque = 0;
-            rearWheelCollider.motorTorque = !IsReverse() ? currentLegPower * inputManager.vertical : reversePower * inputManager.vertical;
+
+            // Si l'accélération personnalisée est activée, on ne touche pas au motorTorque ici
+            if (!useCustomAcceleration)
+            {
+                rearWheelCollider.motorTorque = !IsReverse() ? currentLegPower * inputManager.vertical : reversePower * inputManager.vertical;
+            }
 
             UpdateCenterOfMass();
         }
@@ -195,8 +232,6 @@ namespace KikiNgao.SimpleBikeControl
             m_Rigidbody.angularDamping = restAngularDrag;
             ResetWheelsCollider();
             UpdateCenterOfMass();
-
-
         }
         //When biker exit bike it's start falling 
         public void Falling()
