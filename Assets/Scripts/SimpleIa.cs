@@ -5,6 +5,7 @@ using UnityEngine.AI;
 public class SimpleIA : MonoBehaviour
 {
     public Transform pointB; // Définissable dans l’inspecteur
+    public float speedVariator = 1.0f; // Nouvelle variable pour la vitesse
 
     private NavMeshAgent agent;
 
@@ -14,6 +15,7 @@ public class SimpleIA : MonoBehaviour
 
         if (pointB != null && agent.isOnNavMesh)
         {
+            agent.speed = agent.speed * speedVariator; // Applique la variation de vitesse
             agent.SetDestination(pointB.position);
         }
         else
