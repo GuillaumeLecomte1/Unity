@@ -9,8 +9,9 @@ public class SimpleIA : MonoBehaviour
 
     private NavMeshAgent agent;
 
-    void Start()
+    public void SetEndPoint(Transform endpoint)
     {
+        pointB = endpoint;
         agent = GetComponent<NavMeshAgent>();
 
         if (pointB != null && agent.isOnNavMesh)
