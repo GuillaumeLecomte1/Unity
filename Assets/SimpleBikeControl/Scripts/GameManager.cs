@@ -16,12 +16,8 @@ namespace KikiNgao.SimpleBikeControl
 
         private void Awake()
         {
-            if (instance != null) Destroy(gameObject);
-            else
-            {
-                instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
+            instance = this;
+
         }
         protected void OnDestroy()
         {
