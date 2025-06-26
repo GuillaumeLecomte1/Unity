@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class TriggerEnd : MonoBehaviour
 {
@@ -21,7 +22,11 @@ public class TriggerEnd : MonoBehaviour
         int position = positionCounter++;
 
         Debug.Log($"{racerType} '{racer.name}' a terminé en position {position} !");
-        
+        if (racer.CompareTag("Player"))
+        {
+            // Par exemple : charger une scène de fin
+            SceneManager.LoadScene("EndRaceScene"); // <-- Remplace "SceneFin" par le nom réel
+        }
         // Tu peux aussi appeler un UIManager ici pour afficher sur l'écran
     }
 }
